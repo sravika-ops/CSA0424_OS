@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+void print_sequence(int start, int end, int step) {
+    for (int i = start; i <= end; i += step) {
+        printf("%d ", i);
+    }
+    printf("\n");
+}
+
+int main() {
+    pid_t pid[4];
+    int status[4];
+
+    for (int i = 0; i < 4; i++) {
+        pid[i] = fork();
+
+        if (pid[i] < 0) {
+            printf("Failed to create child process %d\n", i);
+            exit(1);
+        }
+
+        if (pid[i] == 0) {
+            printf("Child %d: Process ID = %d\n", i + 1, getpid());
+            switch(i) {
+                case 0:
+                    print_sequence(1, 10, 2);
+                    break;
+                case 1:
+                    print_sequence(2, 10, 2);
+                    break;
+                case 2:
+                    print_sequence(3, 30, 3);
+                    break;
+                case 3:
+                    print_sequence(5, 50, 5);
+                    break;
+                default:
+                    break;
+            }
+            exit(0);
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        waitpid(pid[i], &status[i], 0);
+        printf("Child %d: Exit status = %d\n", i + 1, status[i]);
+    }
+
+    return 0;
+}
